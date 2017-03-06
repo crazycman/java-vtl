@@ -4,16 +4,22 @@
 define(['angular',], function (angular) {
     var moduleName = 'vtl';
     angular.module(moduleName, [])
+        .constant('config', {
+            uri:'http://localhost:8080/'
+            // url: 'https://vtl-demo.ssb.no/execute2'
+        })
         .directive('vtlExample', function () {
             return {
                 restrict: 'AE',
                 scope: {},
                 transclude: true,
                 template: '<div class="vtl-example"></div>',
-                controller: ['$scope', '$http', function ($scope, $http) {
+                controller: ['$scope', '$http', 'config', function ($scope, $http, config) {
 
                     $scope.outputDatasets = [];
                     $scope.inputDatasets = [];
+                    $scope.executionTree = [];
+
                     $scope.$watch('outputDatasets', function (newValues, oldValues) {
                         // Copy
                         $scope.datasets = $scope.inputDatasets.slice();
@@ -45,10 +51,22 @@ define(['angular',], function (angular) {
                         };
 
                         // Simple GET request example:
+                        // TODO: Disable is not displayed.
                         $http({
                             data: execution,
                             method: 'POST',
-                            url: 'https://vtl-demo.ssb.no/execute2'
+                            url: config.uri + 'tree'
+                        }).then(function successCallback(response) {
+                            $scope.executionTree = response.data;
+                        }, function failureCallback() {
+                            $scope.executionTree = [];
+                        });
+
+                        // Simple GET request example:
+                        $http({
+                            data: execution,
+                            method: 'POST',
+                            url: config.uri + '/execute2'
                         }).then(function successCallback(response) {
                             $scope.loading = false;
                             $scope.outputDatasets = response.data.datasets;

@@ -112,6 +112,7 @@ id1[I,String],id2[I,String],measure[M,String],attribute[A,String]
 1,4,right value 4, right attribute 4
     </vtl-dataset>
     <vtl-data datasets="datasets" errors="errors"></vtl-data>
+    <vtl-tree tree="executionTree" />
 </div>
 
 ### Fold clause

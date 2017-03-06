@@ -15,11 +15,15 @@ require.config({
         'angular': '//unpkg.com/angular@1.6.1/angular',
         'smart-table': 'https://unpkg.com/angular-smart-table@2.1.8/dist/smart-table',
         'ui.bootstrap': 'https://unpkg.com/angular-ui-bootstrap@2.5.0/dist/ui-bootstrap-tpls',
-        'ui.codemirror':'//unpkg.com/angular-ui-codemirror@0.3.0/src/ui-codemirror'
+        'ui.codemirror': '//unpkg.com/angular-ui-codemirror@0.3.0/src/ui-codemirror',
+        'treeControl': '//unpkg.com/angular-tree-control@0.2.28/angular-tree-control'
     },
     shim: {
         angular: {
             exports: 'angular'
+        },
+        'treeControl': {
+            deps: ['angular']
         },
         'smart-table': {
             deps: ['angular']
@@ -101,11 +105,12 @@ require.config({
 
 require([
     'rd', 'angular', 'codemirror-simple',
-    'smart-table', 'ui.bootstrap', 'ui.codemirror',
+    'smart-table', 'ui.bootstrap', 'ui.codemirror', 'treeControl',
     '../../js/directives/vtl-codemirror',
     '../../js/directives/vtl-dataset',
     '../../js/directives/vtl-data',
     '../../js/directives/vtl-example',
+    '../../js/directives/vtl-tree',
     '../../js/directives/vtl-table'], function (rd, angular, sm) {
 
     rd.Diagram.VERTICAL_SEPARATION = 20;
@@ -126,8 +131,8 @@ require([
         )
     ).addTo(document.getElementById("foldClause"));
 
-    angular.module('documentation', ['smart-table', 'ui.bootstrap', 'ui.codemirror',
-        'vtl.code', 'vtl.data', 'vtl.dataset', 'vtl.table', 'vtl']);
+    angular.module('documentation', ['smart-table', 'ui.bootstrap', 'ui.codemirror', 'treeControl',
+        'vtl.code', 'vtl.data', 'vtl.dataset', 'vtl.table', 'vtl.tree', 'vtl']);
     angular.bootstrap(angular.element('#content')[0], ['documentation']);
 
 });

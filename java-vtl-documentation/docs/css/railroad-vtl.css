@@ -124,3 +124,25 @@ svg.railroad-diagram {
     overflow: auto;
     max-height: 300px;
 }
+
+.icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    background-size: 14px;
+    background-repeat: no-repeat;
+}
+
+
+treecontrol.tree-boot li.tree-expanded i.tree-branch-head {
+    padding:1px 2px;
+    background:url(https://bowercdn.net/c/fatcow-icons-1.0.6/icons/16px/bullet_arrow_down.png);
+}
+treecontrol.tree-boot li.tree-collapsed i.tree-branch-head {
+    padding:1px 2px;
+    background:url(https://bowercdn.net/c/fatcow-icons-1.0.6/icons/16px/bullet_arrow_right.png);
+}
+treecontrol.tree-boot li.tree-expanded i.tree-leaf-head {
+    background:none;
+    padding:0;
+}

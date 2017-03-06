@@ -1,0 +1,21 @@
+<div>
+    <treecontrol class="tree-boot" tree-model="tree" options="opts">
+        <span ng-switch="node.type">
+            <i ng-switch-when="get" class="icon i-16-database" aria-hidden="true"></i>
+            <i ng-switch-when="structure" class="icon i-16-table_design" aria-hidden="true"></i>
+            <i ng-switch-when="dataset" class="icon i-16-table" aria-hidden="true"></i>
+            <i ng-switch-when="expression" class="icon i-16-table_insert" aria-hidden="true"></i>
+            <i ng-switch-when="inner-join" class="icon i-16-table_relationship" aria-hidden="true"></i>
+            <i ng-switch-when="outer-join" class="icon i-16-table_relationship" aria-hidden="true"></i>
+            <i ng-switch-when="filter" class="icon i-16-table_filter" aria-hidden="true"></i>
+            <i ng-switch-when="measure" class="icon i-16-measure" aria-hidden="true"></i>
+            <i ng-switch-when="attribute" class="icon i-16-comment" aria-hidden="true"></i>
+            <i ng-switch-when="identifier" class="icon i-16-key" aria-hidden="true"></i>
+            <i ng-switch-when="fold" class="icon i-16-summary_table" aria-hidden="true"></i>
+            <i ng-switch-when="unfold" class="icon i-16-summary_table" aria-hidden="true"></i>
+            <i ng-switch-when="rename" class="icon i-16-table_replace" aria-hidden="true"></i>
+            <i ng-switch-when="keep" class="icon i-16-table_select_column" aria-hidden="true"></i>
+            <i ng-switch-when="drop" class="icon i-16-table_select_column" aria-hidden="true"></i>
+        </span>{{ node.name ? node.name : node.type }} ({{node.id}})
+    </treecontrol>
+</div>

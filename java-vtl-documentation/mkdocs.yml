@@ -12,6 +12,8 @@ pages:
 
 extra_css:
     - 'https://unpkg.com/codemirror@5.23.0/lib/codemirror.css'
+    - 'https://unpkg.com/angular-tree-control@0.2.28/css/tree-control.css'
+    - 'https://bowercdn.net/c/fatcow-icons-1.0.6/icons-16px.css'
     - css/railroad-diagrams.css
     - css/railroad-vtl.css
 

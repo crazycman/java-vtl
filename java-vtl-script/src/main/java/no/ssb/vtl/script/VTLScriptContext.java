@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class VTLScriptContext extends SimpleScriptContext{
     
@@ -174,16 +173,16 @@ public class VTLScriptContext extends SimpleScriptContext{
     }
     
     private void checkName(String name) {
-        Objects.requireNonNull(name);
-        if (name.isEmpty()) {
-            throw new IllegalArgumentException("name cannot be empty");
-        }
+//        Objects.requireNonNull(name);
+//        if (name.isEmpty()) {
+//            throw new IllegalArgumentException("name cannot be empty");
+//        }
     }
     
     private void checkScope(int scope) {
-        if (!scopes.containsKey(scope)) {
-            throw new IllegalArgumentException("Illegal scope value");
-        }
+//        if (!scopes.containsKey(scope)) {
+//            throw new IllegalArgumentException("Illegal scope value");
+//        }
     }
     
 }

@@ -114,6 +114,27 @@ public class ExecutorController {
     }
 
     @RequestMapping(
+            path = "/tree",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public List<ExecutionTreeNode> tree(@RequestBody ExecutionWrapper execution) throws ScriptException {
+        String expression = execution.getExpression();
+        List<DatasetWrapper> datasets = execution.getDatasets();
+        Bindings bindings = execute(expression, datasets);
+
+        List<ExecutionTreeNode> nodes = Lists.newArrayList();
+        for (Map.Entry<String, Object> entry : bindings.entrySet()) {
+            if (entry.getValue() instanceof Dataset) {
+                Dataset dataset = (Dataset) entry.getValue();
+                nodes.add(new ExecutionTreeNode(dataset, entry.getKey()));
+            }
+        }
+        return nodes;
+    }
+
+    @RequestMapping(
             path = "/execute2",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -121,21 +142,28 @@ public class ExecutorController {
     )
     public Object execute(@RequestBody ExecutionWrapper execution) throws ScriptException {
 
-        Bindings bindings = vtlEngine.createBindings();
+        String expression = execution.getExpression();
+        List<DatasetWrapper> datasets = execution.getDatasets();
+        Bindings bindings = execute(expression, datasets);
 
-        for (DatasetWrapper dataset : execution.getDatasets()) {
-            String name = dataset.getName();
-            bindings.put(name, convertToDataset(dataset));
-        }
-        vtlEngine.eval(execution.getExpression(), bindings);
-
-        ResultWrapper datasets = new ResultWrapper();
+        ResultWrapper resultDatasets = new ResultWrapper();
         for (Map.Entry<String, Object> entry : bindings.entrySet()) {
-            datasets.getDatasets().add(
+            resultDatasets.getDatasets().add(
                     convertToDatasetWrapper(entry.getKey(), (Dataset) entry.getValue())
             );
         }
-        return datasets;
+        return resultDatasets;
+    }
+
+    private Bindings execute(String expression, List<DatasetWrapper> datasets) throws ScriptException {
+        Bindings bindings = vtlEngine.createBindings();
+
+        for (DatasetWrapper dataset : datasets) {
+            String name = dataset.getName();
+            bindings.put(name, convertToDataset(dataset));
+        }
+        vtlEngine.eval(expression, bindings);
+        return bindings;
     }
 
     private DatasetWrapper convertToDatasetWrapper(String name, Dataset dataset) {

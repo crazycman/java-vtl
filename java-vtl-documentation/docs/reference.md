@@ -60,6 +60,42 @@ string {s1, ..., sn}
 
 ### Function
 
+#### Aggregation
+
+An aggregate function groups together data points where the value of the specified identifier component(s) are equal 
+and then aggregates the values of the specified measure component for each group of data points. 
+
+Aggregation functions may only aggregate one measure component per dataset. 
+If the dataset has multiple measure components the measure component to be aggregated must be explicitly specified.
+
+The identifier components to group by can be specified either by the group by keyword of with the along keyword.
+
+Group by will group the data points to be aggregated were the value of all specified identifiers are equal
+and the resulting dataset will contain all the specified identifiers and the aggregated measure 
+(all other components will be dropped from the resulting dataset)
+
+Along will do the opposite of group by and group the data points were all identifiers except the specified identifier(s)
+ are equal and the resulting dataset will contain all identifiers, expect the specified, and the aggregated measure.  
+
+##### Sum
+
+Sum is a specific aggregation function that simply sums the grouped values of the specified measure 
+
+<div vtl-example>
+    <vtl-code>
+sumOfM1GroupedById1 := sum(dataset.measure) group by id1
+    </vtl-code>
+    <vtl-dataset name="dataset">
+id1[I,String],id2[I,String],measure[M,Long]
+a, 1, 14
+a, 2, 23
+b, 1, 32
+b, 2, 41
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div>
+
+
 ### ()
 
 ## Join expressions

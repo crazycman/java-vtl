@@ -9,6 +9,7 @@ import no.ssb.vtl.connector.Connector;
 import no.ssb.vtl.connectors.SsbApiConnector;
 import no.ssb.vtl.connectors.SsbKlassApiConnector;
 import no.ssb.vtl.script.VTLScriptEngine;
+import no.ssb.vtl.tools.sandbox.connector.TimeoutConnector;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -20,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.script.Bindings;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -38,7 +40,7 @@ public class Application {
 
     @Bean
     List<Connector> getConnectors(ObjectMapper mapper) {
-        return Lists.newArrayList(
+        List<Connector> connectors = Lists.newArrayList(
 
 //                new RestDataConnector("http://localhost:7080", mapper),
 //                new RestDataConnector("http://al-kostra-app-utv:7080", mapper),
@@ -54,6 +56,11 @@ public class Application {
 
                 new SsbKlassApiConnector(mapper, SsbKlassApiConnector.PeriodType.YEAR),
                 new SsbApiConnector(mapper)
+        );
+
+        return Lists.transform(
+                connectors,
+                connector -> TimeoutConnector.create(connector, 10, TimeUnit.SECONDS)
         );
     }
 

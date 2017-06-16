@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector.converters;
+package no.ssb.vtl.tools.sandbox.connector.spring.converters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.util.function.BiFunction;
 
-import static no.ssb.vtl.tools.sandbox.connector.converters.DataStructureHttpConverter.MEDIA_TYPE;
+import static no.ssb.vtl.tools.sandbox.connector.spring.converters.DataStructureHttpConverter.MEDIA_TYPE;
 
 public class DataStructureHttpConverterTest {
 

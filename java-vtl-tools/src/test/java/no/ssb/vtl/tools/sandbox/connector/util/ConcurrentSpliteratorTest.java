@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.util;
 
 import org.assertj.core.util.Lists;
 import org.junit.Test;

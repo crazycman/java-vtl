@@ -1,11 +1,11 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.tools.sandbox.connector.converters.DataHttpConverter;
-import no.ssb.vtl.tools.sandbox.connector.converters.DataStructureHttpConverter;
-import no.ssb.vtl.tools.sandbox.connector.converters.NonClosingClientHttpResponse;
+import no.ssb.vtl.tools.sandbox.connector.spring.converters.DataHttpConverter;
+import no.ssb.vtl.tools.sandbox.connector.spring.converters.DataStructureHttpConverter;
+import no.ssb.vtl.tools.sandbox.connector.spring.nonclosing.NonClosingClientHttpResponse;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,9 +44,6 @@ public class RestTemplateConnectorTest {
         template = new RestTemplate();
 
         SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = getSimpleClientHttpRequestFactory();
-        ClientHttpRequestFactory netty4Factory = getNetty4ClientHttpRequestFactory();
-        HttpComponentsAsyncClientHttpRequestFactory httpComponentAsync = getHttpComponentsAsyncClientHttpRequestFactory();
-
         ClientHttpRequestFactory nonClosing = new AbstractClientHttpRequestFactoryWrapper(simpleClientHttpRequestFactory) {
             // TODO: Look at the buffering
 
@@ -124,14 +121,15 @@ public class RestTemplateConnectorTest {
 
     @Test
     public void getGet() throws Exception {
-        //Dataset dataset = restTemplateConnector.getDataset("http://al-kostra-app-test:7090/api/v2/data/EOy-Ul8CSpSxNDOl34ywtQ");
+        Dataset dataset = restTemplateConnector.getDataset("http://al-kostra-app-test:7090/api/v2/data/EOy-Ul8CSpSxNDOl34ywtQ");
 
-        Dataset dataset = restTemplateConnector.getDataset("http://www.mocky.io/v2/5942eeae1200001610ddc64a");
+        //Dataset dataset = restTemplateConnector.getDataset("http://www.mocky.io/v2/5942eeae1200001610ddc64a");
         //dataset.getDataStructure();
-        Stream<DataPoint> data = dataset.getData();
-        data.forEach(vtlObjects -> {
-            System.out.print(vtlObjects);
-        });
+        try (Stream<DataPoint> data = dataset.getData()) {
+            data.forEach(vtlObjects -> {
+                System.out.print(vtlObjects);
+            });
+        }
     }
 
     private static final class AuthorizationTokenInterceptor implements ClientHttpRequestInterceptor {

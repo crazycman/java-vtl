@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.spring;
 
 import no.ssb.vtl.connector.Connector;
 import no.ssb.vtl.connector.ConnectorException;
@@ -26,6 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Created by hadrien on 15/06/2017.
  */
+@Deprecated
 public class RestTemplateConnector implements Connector {
 
     private static final Logger log = LoggerFactory.getLogger(RestTemplateConnector.class);

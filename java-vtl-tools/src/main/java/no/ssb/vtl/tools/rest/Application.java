@@ -5,6 +5,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
+import no.ssb.common.data.connector.RestDataConnector;
 import no.ssb.vtl.connector.Connector;
 import no.ssb.vtl.connectors.SsbApiConnector;
 import no.ssb.vtl.connectors.SsbKlassApiConnector;
@@ -42,17 +43,17 @@ public class Application {
     List<Connector> getConnectors(ObjectMapper mapper) {
         List<Connector> connectors = Lists.newArrayList(
 
-//                new RestDataConnector("http://localhost:7080", mapper),
-//                new RestDataConnector("http://al-kostra-app-utv:7080", mapper),
-//                new RestDataConnector("http://al-kostra-app-test:7080", mapper),
-//                new RestDataConnector("http://al-kostra-app-utv.ssb.no:7080", mapper),
-//                new RestDataConnector("http://al-kostra-app-test.ssb.no:7080", mapper),
-//
-//                new RestDataConnector("http://localhost:7090", mapper),
-//                new RestDataConnector("http://al-kostra-app-utv:7090", mapper),
-//                new RestDataConnector("http://al-kostra-app-test:7090", mapper),
-//                new RestDataConnector("http://al-kostra-app-utv.ssb.no:7090", mapper),
-//                new RestDataConnector("http://al-kostra-app-test.ssb.no:7090", mapper),
+                new RestDataConnector("http://localhost:7080", mapper),
+                new RestDataConnector("http://al-kostra-app-utv:7080", mapper),
+                new RestDataConnector("http://al-kostra-app-test:7080", mapper),
+                new RestDataConnector("http://al-kostra-app-utv.ssb.no:7080", mapper),
+                new RestDataConnector("http://al-kostra-app-test.ssb.no:7080", mapper),
+
+                new RestDataConnector("http://localhost:7090", mapper),
+                new RestDataConnector("http://al-kostra-app-utv:7090", mapper),
+                new RestDataConnector("http://al-kostra-app-test:7090", mapper),
+                new RestDataConnector("http://al-kostra-app-utv.ssb.no:7090", mapper),
+                new RestDataConnector("http://al-kostra-app-test.ssb.no:7090", mapper),
 
                 new SsbKlassApiConnector(mapper, SsbKlassApiConnector.PeriodType.YEAR),
                 new SsbApiConnector(mapper)

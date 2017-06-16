@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector.converters;
+package no.ssb.vtl.tools.sandbox.connector.spring.converters;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;

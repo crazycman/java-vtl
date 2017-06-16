@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector.converters;
+package no.ssb.vtl.tools.sandbox.connector.spring.nonclosing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

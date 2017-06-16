@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.util;
 
 import com.google.common.collect.Lists;
 

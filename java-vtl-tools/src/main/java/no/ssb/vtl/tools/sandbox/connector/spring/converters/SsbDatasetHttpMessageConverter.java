@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.spring.converters;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.google.common.annotations.VisibleForTesting;

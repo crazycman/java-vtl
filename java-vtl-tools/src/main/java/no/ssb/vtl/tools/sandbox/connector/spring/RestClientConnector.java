@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.spring;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,17 +6,18 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
+import com.google.common.io.ByteStreams;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLObject;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.GenericHttpMessageConverter;
-import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,7 +29,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -36,44 +40,63 @@ import java.util.stream.StreamSupport;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * A connector that relies on {@link RestTemplate}
+ * A connector that relies on {@link RestTemplate}.
+ * <p>
+ * In order to allow streaming the requests needs to be started in another
+ * thread because RestTemplate will close the connection.
+ * <p>
+ * This class solves this issue by executing the requests in a thread pools and
+ * transfer the result to a wrapped stream.
  */
 public class RestClientConnector {
 
-    // End of stream.
+    // End of stream marker.
     private static final DataPoint EOS = DataPoint.create(0);
 
-    final AsyncRestTemplate asyncTemplate;
-    /*
-     * Sadly, spring gives very little control over how it processes the
-     * responses' bodies of the requests made by the RestTemplate.
-     * That is why we need an executor service to copy the data from the
-     * active connections to the streams.
-     */
-    ExecutorService executorService = Executors.newFixedThreadPool(5);
-    RestTemplate template = new RestTemplate();
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ExecutorService executorService;
+    private final RestTemplate template;
 
-    public RestClientConnector(AsyncRestTemplate template) {
-        this.asyncTemplate = checkNotNull(template);
+    public RestClientConnector(RestTemplate template, ExecutorService executorService) {
+        this.template = checkNotNull(template);
+        this.executorService = checkNotNull(executorService);
     }
 
     public void test() throws ExecutionException, InterruptedException {
 
         try {
-            ResponseEntity<DataStructure> structure = asyncTemplate.getForEntity("http://dataset", DataStructure.class).get();
+            ResponseEntity<DataStructure> structure = template.getForEntity("http://dataset", DataStructure.class);
         } catch (RestClientException rce) {
             rce.printStackTrace();
         }
 
         try {
-            ResponseEntity<Dataset> forEntity = asyncTemplate.getForEntity("http://dataset", Dataset.class).get();
+            ResponseEntity<Dataset> forEntity = template.getForEntity("http://dataset", Dataset.class);
         } catch (RestClientException rce) {
             rce.printStackTrace();
         }
     }
 
+    /**
+     * Create a new data stream by starting a request in another thread.
+     *
+     * @return
+     */
+    private Stream<DataPoint> createDataStream(URI uri) {
+
+
+        ResponseEntity<Dataset> dataset = template.getForEntity(uri, Dataset.class);
+
+        return null;
+    }
+
     public void getDataWithExecutor() throws IOException, InterruptedException {
+
+        ResponseEntity<InputStreamResource> forEntity = template.getForEntity(
+                URI.create("http://www.mocky.io/v2/5940200d100000f410cd122c"),
+                InputStreamResource.class
+        );
+        ByteStreams.copy(forEntity.getBody().getInputStream(), System.out);
+        System.out.println(forEntity.getBody());
 
         ClientHttpRequestFactory factory = template.getRequestFactory();
         ClientHttpRequest request = factory.createRequest(
@@ -87,6 +110,8 @@ public class RestClientConnector {
         ClientHttpResponse response = request.execute();
         Runnable task = createExtractingTask(response, queue, reader);
         Future<?> future = executorService.submit(task);
+
+
 
         Spliterator<DataPoint> spliterator = new Spliterators.AbstractSpliterator<DataPoint>(
                 Long.MAX_VALUE,
@@ -160,6 +185,7 @@ public class RestClientConnector {
         reference = new TypeReference<List<?>>() {
         };
 
+        ObjectMapper mapper = new ObjectMapper();
         JsonParser parser = mapper.getFactory().createParser(response);
         parser.nextToken();
         parser.nextToken();

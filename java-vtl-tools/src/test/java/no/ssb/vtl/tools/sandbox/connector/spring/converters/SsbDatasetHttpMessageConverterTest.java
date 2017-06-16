@@ -1,4 +1,4 @@
-package no.ssb.vtl.tools.sandbox.connector;
+package no.ssb.vtl.tools.sandbox.connector.spring.converters;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -22,10 +22,10 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-import static no.ssb.vtl.tools.sandbox.connector.SsbDatasetHttpMessageConverter.APPLICATION_DATASET_DATA_JSON;
-import static no.ssb.vtl.tools.sandbox.connector.SsbDatasetHttpMessageConverter.APPLICATION_DATASET_JSON;
-import static no.ssb.vtl.tools.sandbox.connector.SsbDatasetHttpMessageConverter.APPLICATION_DATASET_STRUCTURE_JSON;
-import static no.ssb.vtl.tools.sandbox.connector.SsbDatasetHttpMessageConverter.SUPPORTED_TYPES;
+import static no.ssb.vtl.tools.sandbox.connector.spring.converters.SsbDatasetHttpMessageConverter.APPLICATION_DATASET_DATA_JSON;
+import static no.ssb.vtl.tools.sandbox.connector.spring.converters.SsbDatasetHttpMessageConverter.APPLICATION_DATASET_JSON;
+import static no.ssb.vtl.tools.sandbox.connector.spring.converters.SsbDatasetHttpMessageConverter.APPLICATION_DATASET_STRUCTURE_JSON;
+import static no.ssb.vtl.tools.sandbox.connector.spring.converters.SsbDatasetHttpMessageConverter.SUPPORTED_TYPES;
 
 public class SsbDatasetHttpMessageConverterTest {
 

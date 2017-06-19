@@ -8,9 +8,14 @@ import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.mock.http.MockHttpInputMessage;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.function.BiFunction;
 
+import static com.google.common.io.Resources.getResource;
 import static no.ssb.vtl.tools.sandbox.connector.spring.converters.DataStructureHttpConverter.MEDIA_TYPE;
 
 public class DataStructureHttpConverterTest {
@@ -25,6 +30,14 @@ public class DataStructureHttpConverterTest {
     public void setUp() throws Exception {
         mapper = new ObjectMapper();
         converter = new DataStructureHttpConverter(mapper);
+    }
+
+    @Test
+    public void testReadDataStructureVersion2() throws Exception {
+        HttpInputMessage message = loadFile("ssb.dataset.structure+json;version=2" + ".json");
+
+        DataStructure result = converter.read(DataStructure.class, message);
+        System.out.println(result);
     }
 
     @Test
@@ -73,5 +86,10 @@ public class DataStructureHttpConverterTest {
         protected ExtendedDataStructure(BiFunction<Object, Class<?>, ?> converter, ImmutableMap<String, Component> map) {
             super(converter, map);
         }
+    }
+
+    private HttpInputMessage loadFile(String name) throws IOException {
+        InputStream stream = getResource(name).openStream();
+        return new MockHttpInputMessage(stream);
     }
 }

@@ -22,9 +22,10 @@ import java.net.URI;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Created by hadrien on 16/06/2017.
+ * POC.
  */
 public class NonClosingRestTemplate extends RestTemplate {
+
 
     private final RestTemplate delegate;
 

@@ -1,6 +1,9 @@
 package no.ssb.vtl.tools.sandbox.connector.spring.converters;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataStructure;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -10,6 +13,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -49,11 +53,56 @@ public class DataStructureHttpConverter extends AbstractHttpMessageConverter<Dat
 
     @Override
     protected DataStructure readInternal(Class<? extends DataStructure> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-        return null;
+        JsonParser parser = mapper.getFactory().createParser(inputMessage.getBody());
+
+        TypeReference<List<DataStructureWrapper>> typeReference = new TypeReference<List<DataStructureWrapper>>() {
+        };
+        List<DataStructureWrapper> parsed = parser.readValueAs(typeReference);
+
+        DataStructure.Builder builder = DataStructure.builder();
+        for (DataStructureWrapper variable : parsed) {
+            builder.put(
+                    variable.getName(),
+                    variable.getRole(),
+                    variable.getType().getType()
+            );
+        }
+        return builder.build();
     }
 
     @Override
     protected void writeInternal(DataStructure dataStructure, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 
+    }
+
+    private static class DataStructureWrapper {
+
+        private String name;
+        private Component.Role role;
+        private RoleMapping type;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Component.Role getRole() {
+            return role;
+        }
+
+        public void setRole(Component.Role role) {
+            this.role = role;
+        }
+
+        public RoleMapping getType() {
+            return type;
+        }
+
+        public void setType(RoleMapping type) {
+            this.type = type;
+        }
     }
 }

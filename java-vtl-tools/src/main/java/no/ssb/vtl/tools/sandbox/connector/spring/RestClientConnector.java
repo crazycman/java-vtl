@@ -6,18 +6,19 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-import com.google.common.io.ByteStreams;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLObject;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.GenericHttpMessageConverter;
+import org.springframework.web.client.HttpMessageConverterExtractor;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -54,10 +55,10 @@ public class RestClientConnector {
     private static final DataPoint EOS = DataPoint.create(0);
 
     private final ExecutorService executorService;
-    private final RestTemplate template;
+    private final WrappedRestTemplate template;
 
     public RestClientConnector(RestTemplate template, ExecutorService executorService) {
-        this.template = checkNotNull(template);
+        this.template = new WrappedRestTemplate(checkNotNull(template));
         this.executorService = checkNotNull(executorService);
     }
 
@@ -91,13 +92,43 @@ public class RestClientConnector {
 
     public void getDataWithExecutor() throws IOException, InterruptedException {
 
-        ResponseEntity<InputStreamResource> forEntity = template.getForEntity(
-                URI.create("http://www.mocky.io/v2/5940200d100000f410cd122c"),
-                InputStreamResource.class
-        );
-        ByteStreams.copy(forEntity.getBody().getInputStream(), System.out);
-        System.out.println(forEntity.getBody());
+// Does not work, stream is closed.
+//
+//        ResponseEntity<InputStreamResource> forEntity = template.getForEntity(
+//                URI.create("http://www.mocky.io/v2/5940200d100000f410cd122c"),
+//                InputStreamResource.class
+//        );
+//        ByteStreams.copy(forEntity.getBody().getInputStream(), System.out);
+//        System.out.println(forEntity.getBody());
 
+
+        template.execute(
+                URI.create("http://www.mocky.io/v2/5940200d100000f410cd122c"),
+                HttpMethod.GET,
+                new RequestCallback() {
+                    @Override
+                    public void doWithRequest(ClientHttpRequest request) throws IOException {
+                        template.acceptHeaderRequestCallback(Dataset.class).doWithRequest(request);
+                        System.out.println("Got request" + request);
+                    }
+                },
+                new ResponseExtractor<Void>() {
+                    @Override
+                    public Void extractData(ClientHttpResponse response) throws IOException {
+
+                        HttpMessageConverterExtractor<List> extractor = new HttpMessageConverterExtractor<>(
+                                List.class, template.getMessageConverters()
+                        );
+                        List dataset = extractor.extractData(response);
+
+                        //dataset.getData().forEach(System.out::println);
+
+                        return null;
+                    }
+                }
+        );
+
+// Works
         ClientHttpRequestFactory factory = template.getRequestFactory();
         ClientHttpRequest request = factory.createRequest(
                 URI.create("http://www.mocky.io/v2/5940200d100000f410cd122c"),
@@ -227,5 +258,34 @@ public class RestClientConnector {
             }
         };
     }
+
+    /**
+     * Exposes some of the variables.
+     */
+    public class WrappedRestTemplate extends RestTemplate {
+
+        public WrappedRestTemplate(RestTemplate template) {
+
+            // TODO(hk): Check if this has consequences.
+            // setDefaultUriVariables();
+
+            setErrorHandler(template.getErrorHandler());
+            setInterceptors(template.getInterceptors());
+            setMessageConverters(template.getMessageConverters());
+            setRequestFactory(template.getRequestFactory());
+            setUriTemplateHandler(getUriTemplateHandler());
+        }
+
+        @Override
+        public  <T> RequestCallback acceptHeaderRequestCallback(Class<T> responseType) {
+            return super.acceptHeaderRequestCallback(responseType);
+        }
+
+        @Override
+        protected <T> ResponseExtractor<ResponseEntity<T>> responseEntityExtractor(Type responseType) {
+            return super.responseEntityExtractor(responseType);
+        }
+    }
+
 
 }

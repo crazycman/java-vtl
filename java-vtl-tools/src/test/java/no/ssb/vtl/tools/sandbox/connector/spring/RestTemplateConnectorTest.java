@@ -132,7 +132,7 @@ public class RestTemplateConnectorTest {
         }
     }
 
-    private static final class AuthorizationTokenInterceptor implements ClientHttpRequestInterceptor {
+    static final class AuthorizationTokenInterceptor implements ClientHttpRequestInterceptor {
         private final String TOKEN = "bearer " +
                 "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9" +
                 "." +

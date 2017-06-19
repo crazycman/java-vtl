@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Country",
+    "role": "IDENTIFIER",
+    "type": "STRING"
+  },
+  {
+    "name": "SentOn",
+    "role": "ATTRIBUTE",
+    "type": "NUMERIC"
+  },
+  {
+    "name": "Measure",
+    "role": "IDENTIFIER",
+    "type": "NUMERIC"
+  },
+  {
+    "name": "Type",
+    "role": "ATTRIBUTE",
+    "type": "STRING"
+  },
+  {
+    "name": "Valid",
+    "role": "ATTRIBUTE",
+    "type": "BOOLEAN"
+  }
+]

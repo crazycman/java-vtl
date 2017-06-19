@@ -1,6 +1,7 @@
 package no.ssb.vtl.tools.sandbox.connector.spring.converters;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
@@ -25,13 +26,8 @@ class SsbDatasetHttpMessageConverter extends MappingJackson2HttpMessageConverter
     public static final String APPLICATION_DATASET_JSON_VALUE = "application/ssb.dataset+json";
     public static final MediaType APPLICATION_DATASET_JSON = MediaType.parseMediaType(APPLICATION_DATASET_JSON_VALUE);
 
-    // TODO: remove
-    public static final String APPLICATION_DATASET_DATA_JSON_VALUE = "application/ssb.dataset.data+json";
-    public static final MediaType APPLICATION_DATASET_DATA_JSON = MediaType.parseMediaType(APPLICATION_DATASET_DATA_JSON_VALUE);
-
-    // TODO: remove
-    public static final String APPLICATION_DATASET_STRUCTURE_JSON_VALUE = "application/ssb.dataset.structure+json";
-    public static final MediaType APPLICATION_DATASET_STRUCTURE_JSON = MediaType.parseMediaType(APPLICATION_DATASET_STRUCTURE_JSON_VALUE);
+    private final DataHttpConverter dataConverter;
+    private final DataStructureHttpConverter structureConverter;
 
     @VisibleForTesting
     static final List<MediaType> SUPPORTED_TYPES;
@@ -39,8 +35,16 @@ class SsbDatasetHttpMessageConverter extends MappingJackson2HttpMessageConverter
     static {
         SUPPORTED_TYPES = new ArrayList<>();
         SUPPORTED_TYPES.add(APPLICATION_DATASET_JSON);
-        SUPPORTED_TYPES.add(APPLICATION_DATASET_DATA_JSON);
-        SUPPORTED_TYPES.add(APPLICATION_DATASET_STRUCTURE_JSON);
+    }
+
+    public SsbDatasetHttpMessageConverter(ObjectMapper objectMapper) {
+        super(objectMapper);
+        dataConverter = new DataHttpConverter(objectMapper);
+        structureConverter = new DataStructureHttpConverter(objectMapper);
+    }
+
+    private SsbDatasetHttpMessageConverter() {
+        this(new ObjectMapper());
     }
 
     @Override

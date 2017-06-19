@@ -1,0 +1,109 @@
+[
+  [
+    {
+      "type": "STRING",
+      "val": "France"
+    },
+    {
+      "type": "DATE",
+      "val": "2016-09-20T11:54:13.268Z"
+    },
+    {
+      "type": "NUMERIC",
+      "val": 4895
+    },
+    {
+      "type": "STRING",
+      "val": "Estimated"
+    },
+    {
+      "type": "BOOLEAN",
+      "val": true
+    }
+  ],
+  [
+    {
+      "type": "STRING",
+      "val": "Norway"
+    },
+    {
+      "type": "DATE",
+      "val": "2016-11-03T11:54:13.268Z"
+    },
+    {
+      "type": "NUMERIC",
+      "val": 789
+    },
+    {
+      "type": "STRING",
+      "val": "Reported"
+    },
+    {
+      "type": "BOOLEAN",
+      "val": true
+    }
+  ],
+  [
+    {
+      "type": "STRING",
+      "val": "Sweden"
+    },
+    {
+      "type": "DATE",
+      "val": "2016-10-12T11:54:13.268Z"
+    },
+    {
+      "type": "NUMERIC",
+      "val": 645
+    },
+    {
+      "type": "STRING",
+      "val": "Reported"
+    },
+    {
+      "type": "BOOLEAN",
+      "val": false
+    }
+  ],
+  [
+    {
+      "type": "STRING",
+      "val": "Denmark"
+    },
+    {
+      "type": "DATE",
+      "val": "2016-01-06T11:54:13.268Z"
+    },
+    {
+      "type": "NUMERIC",
+      "val": 1235
+    },
+    {
+      "type": "STRING",
+      "val": "Estimated"
+    },
+    {
+      "type": "BOOLEAN",
+      "val": null
+    }
+  ],
+  [
+    {
+      "type": "STRING",
+      "val": "Italy"
+    },
+    {
+      "type": "DATE",
+      "val": "2016-03-04T11:54:13.268Z"
+    },
+    {
+      "type": "NUMERIC",
+      "val": 1495
+    },
+    {
+      "type": "STRING",
+      "val": "Reported"
+    },
+    null
+  ]
+]

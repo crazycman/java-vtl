@@ -15,14 +15,24 @@ public class RestClientConnectorTest {
 
     @Test
     public void getData() throws Exception {
+
+        // Setup the factory.
+
         SimpleClientHttpRequestFactory schrf = new SimpleClientHttpRequestFactory();
         schrf.setBufferRequestBody(false);
         schrf.setTaskExecutor(new SimpleAsyncTaskExecutor());
 
+
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+        RestTemplate template = new RestTemplate(schrf);
+
+        template.getInterceptors().add(
+                new RestTemplateConnectorTest.AuthorizationTokenInterceptor()
+        );
+
         RestClientConnector restClientConnector = new RestClientConnector(
-                new RestTemplate(schrf),
+                template,
                 executorService
         );
 

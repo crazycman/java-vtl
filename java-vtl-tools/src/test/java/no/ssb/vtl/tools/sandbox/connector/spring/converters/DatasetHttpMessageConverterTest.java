@@ -13,14 +13,14 @@ import org.springframework.http.MediaType;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-import static no.ssb.vtl.tools.sandbox.connector.spring.converters.SsbDatasetHttpMessageConverter.SUPPORTED_TYPES;
+import static no.ssb.vtl.tools.sandbox.connector.spring.converters.DatasetHttpMessageConverter.SUPPORTED_TYPES;
 
-public class SsbDatasetHttpMessageConverterTest {
+public class DatasetHttpMessageConverterTest {
 
     @Rule
     public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
-    private SsbDatasetHttpMessageConverter converter;
+    private DatasetHttpMessageConverter converter;
 
     private Set<MediaType> unsupportedType = ImmutableSet.of(
             MediaType.parseMediaType("something/else"),
@@ -33,7 +33,7 @@ public class SsbDatasetHttpMessageConverterTest {
 
     @Before
     public void setUp() throws Exception {
-        converter = new SsbDatasetHttpMessageConverter(new ObjectMapper());
+        converter = new DatasetHttpMessageConverter(new ObjectMapper());
     }
 
     private static class ExtendedDataStructure extends DataStructure {

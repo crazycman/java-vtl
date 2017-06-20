@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 /**
  * Created by hadrien on 15/06/2017.
  */
-class SsbDatasetHttpMessageConverter extends MappingJackson2HttpMessageConverter {
+class DatasetHttpMessageConverter extends MappingJackson2HttpMessageConverter {
 
     public static final String APPLICATION_DATASET_JSON_VALUE = "application/ssb.dataset+json";
     public static final MediaType APPLICATION_DATASET_JSON = MediaType.parseMediaType(APPLICATION_DATASET_JSON_VALUE);
@@ -37,13 +37,13 @@ class SsbDatasetHttpMessageConverter extends MappingJackson2HttpMessageConverter
         SUPPORTED_TYPES.add(APPLICATION_DATASET_JSON);
     }
 
-    public SsbDatasetHttpMessageConverter(ObjectMapper objectMapper) {
+    public DatasetHttpMessageConverter(ObjectMapper objectMapper) {
         super(objectMapper);
         dataConverter = new DataHttpConverter(objectMapper);
         structureConverter = new DataStructureHttpConverter(objectMapper);
     }
 
-    private SsbDatasetHttpMessageConverter() {
+    private DatasetHttpMessageConverter() {
         this(new ObjectMapper());
     }
 

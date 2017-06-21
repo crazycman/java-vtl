@@ -18,7 +18,21 @@ import java.util.List;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Spring {@link org.springframework.http.converter.HttpMessageConverter} for {@link DataStructure}.
+ * A converter that can read and write data structures.
+ * <p>
+ * It supports reading from:
+ * <ul>
+ * <li>application/ssb.dataset+json</li>
+ * <li>application/x-ssb.dataset+json</li>
+ * <li>application/ssb.dataset.structure+json</li>
+ * <li>application/x-ssb.dataset.structure+json</li>
+ * </ul>
+ * <p>
+ * And writes:
+ * <ul>
+ * <li>application/ssb.dataset.structure+json</li>
+ * <li>application/x-ssb.dataset.structure+json</li>
+ * </ul>
  */
 public class DataStructureHttpConverter extends AbstractHttpMessageConverter<DataStructure> {
 

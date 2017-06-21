@@ -26,12 +26,29 @@ import java.util.stream.StreamSupport;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Created by hadrien on 15/06/2017.
+ * A converter that can read and write datapoint streams.
+ * <p>
+ * It supports reading from:
+ * <ul>
+ * <li>application/ssb.dataset.data+json</li>
+ * <li>application/x-ssb.dataset.data+json</li>
+ * <li>application/ssb.dataset+json</li>
+ * <li>application/x-ssb.dataset+json</li>
+ * </ul>
+ * <p>
+ * And writes:
+ * <ul>
+ * <li>application/ssb.dataset.data+json</li>
+ * <li>application/x-ssb.dataset.data+json</li>
+ * </ul>
  */
 public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Stream<DataPoint>> {
 
+    // http://www.mocky.io/v2/594a3f92100000b4021aa3c0
     public static final String APPLICATION_SSB_DATASET_DATA_JSON_V1_VALUE = "application/ssb.dataset-data+json;version=1";
-    public static final String APPLICATION_SSB_DATASET_DATA_JSON_V2_VALUE = "application/ssb.dataset-data+json;version=2";
+
+    // http://www.mocky.io/v2/594a3fb4100000ae021aa3c2
+    public static final String APPLICATION_SSB_DATASET_DATA_JSON_V2_VALUE = "application/ssb.dataset.data+json;version=2";
 
     public static final MediaType APPLICATION_SSB_DATASET_DATA_JSON_V1 = MediaType.parseMediaType(APPLICATION_SSB_DATASET_DATA_JSON_V1_VALUE);
     public static final MediaType APPLICATION_SSB_DATASET_DATA_JSON_V2 = MediaType.parseMediaType(APPLICATION_SSB_DATASET_DATA_JSON_V2_VALUE);
@@ -50,6 +67,8 @@ public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Strea
                 APPLICATION_SSB_DATASET_DATA_JSON_V2
         );
         this.mapper = checkNotNull(mapper);
+
+        // TODO: Initialize readers.
     }
 
     @Override
@@ -96,6 +115,8 @@ public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Strea
     }
 
     Stream<DataPoint> readWithParser(JsonParser parser) throws IOException {
+
+        // TODO: Manually deserialize (use mapper.readerFor() and types).
 
         MappingIterator<List<VTLObjectWrapper>> data = mapper.readerFor(LIST_TYPE_REFERENCE)
                 .readValues(parser);

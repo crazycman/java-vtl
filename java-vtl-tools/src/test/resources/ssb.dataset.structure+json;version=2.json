@@ -7,17 +7,17 @@
   {
     "name": "SentOn",
     "role": "ATTRIBUTE",
-    "type": "NUMERIC"
+    "type": "DATE"
   },
   {
     "name": "Measure",
-    "role": "IDENTIFIER",
+    "role": "MEASURE",
     "type": "NUMERIC"
   },
   {
     "name": "Type",
     "role": "ATTRIBUTE",
-    "type": "STRING"
+    "type": "INTEGER"
   },
   {
     "name": "Valid",

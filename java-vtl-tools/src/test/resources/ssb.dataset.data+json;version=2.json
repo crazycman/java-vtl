@@ -6,15 +6,15 @@
     },
     {
       "type": "DATE",
-      "val": "2016-09-20T11:54:13.268Z"
+      "val": "2001-01-01T01:01:01.001Z"
     },
     {
       "type": "NUMERIC",
-      "val": 4895
+      "val": 1.1
     },
     {
-      "type": "STRING",
-      "val": "Estimated"
+      "type": "INTEGER",
+      "val": 1
     },
     {
       "type": "BOOLEAN",
@@ -28,37 +28,15 @@
     },
     {
       "type": "DATE",
-      "val": "2016-11-03T11:54:13.268Z"
+      "val": "2002-02-02T02:02:02.002Z"
     },
     {
       "type": "NUMERIC",
-      "val": 789
+      "val": 2.2
     },
     {
-      "type": "STRING",
-      "val": "Reported"
-    },
-    {
-      "type": "BOOLEAN",
-      "val": true
-    }
-  ],
-  [
-    {
-      "type": "STRING",
-      "val": "Sweden"
-    },
-    {
-      "type": "DATE",
-      "val": "2016-10-12T11:54:13.268Z"
-    },
-    {
-      "type": "NUMERIC",
-      "val": 645
-    },
-    {
-      "type": "STRING",
-      "val": "Reported"
+      "type": "INTEGER",
+      "val": 2
     },
     {
       "type": "BOOLEAN",
@@ -68,19 +46,41 @@
   [
     {
       "type": "STRING",
+      "val": "Sweden"
+    },
+    {
+      "type": "DATE",
+      "val": "2003-03-03T03:03:03.003Z"
+    },
+    {
+      "type": "NUMERIC",
+      "val": 3.3
+    },
+    {
+      "type": "INTEGER",
+      "val": 3
+    },
+    {
+      "type": "BOOLEAN",
+      "val": true
+    }
+  ],
+  [
+    {
+      "type": "STRING",
       "val": "Denmark"
     },
     {
       "type": "DATE",
-      "val": "2016-01-06T11:54:13.268Z"
+      "val": "2004-04-04T04:04:04.004Z"
     },
     {
       "type": "NUMERIC",
-      "val": 1235
+      "val": 4.4
     },
     {
-      "type": "STRING",
-      "val": "Estimated"
+      "type": "INTEGER",
+      "val": 4
     },
     {
       "type": "BOOLEAN",
@@ -94,15 +94,15 @@
     },
     {
       "type": "DATE",
-      "val": "2016-03-04T11:54:13.268Z"
+      "val": "2005-05-05T05:05:05.005Z"
     },
     {
       "type": "NUMERIC",
-      "val": 1495
+      "val": 5.5
     },
     {
-      "type": "STRING",
-      "val": "Reported"
+      "type": "INTEGER",
+      "val": 5
     },
     null
   ]

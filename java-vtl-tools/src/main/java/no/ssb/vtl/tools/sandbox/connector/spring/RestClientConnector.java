@@ -74,11 +74,11 @@ public class RestClientConnector implements Connector {
 
         Future<Void> task = executorService.submit(() -> {
 
-            RequestCallback requestCallback = template.httpEntityCallback(null, DATAPOINT_STREAM_TYPE.getType());
+            try {
+                RequestCallback requestCallback = template.httpEntityCallback(null, DATAPOINT_STREAM_TYPE.getType());
 
-            template.execute(uri, HttpMethod.GET, requestCallback, response -> {
+                template.execute(uri, HttpMethod.GET, requestCallback, response -> {
 
-                try {
                     ResponseExtractor<ResponseEntity<Stream<DataPoint>>> extractor;
                     extractor = template.responseEntityExtractor(DATAPOINT_STREAM_TYPE.getType());
 
@@ -97,14 +97,14 @@ public class RestClientConnector implements Connector {
                         log.debug("interrupted while pushing datapoints to {}", queue);
                         reader.interrupt();
                     }
-                } catch (Exception e) {
-                    log.error("read error", e);
-                    exception.set(e);
-                    reader.interrupt();
-                }
-                return null;
-            });
+                    return null;
+                });
 
+            } catch (Exception e) {
+                log.error("read error", e);
+                exception.set(e);
+                reader.interrupt();
+            }
             return null;
         });
 

@@ -37,6 +37,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class DataStructureHttpConverter extends AbstractHttpMessageConverter<DataStructure> {
 
     public static final String MEDIA_TYPE_VALUE = "application/ssb.dataset.structure+json";
+    public static final String MEDIA_TYPE_VALUE2 = "application/x-ssb.dataset.structure+json";
+
     public static final MediaType MEDIA_TYPE = MediaType.parseMediaType(MEDIA_TYPE_VALUE);
 
     private final ObjectMapper mapper;

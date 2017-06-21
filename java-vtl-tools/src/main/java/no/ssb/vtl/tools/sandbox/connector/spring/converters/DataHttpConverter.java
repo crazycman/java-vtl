@@ -26,31 +26,25 @@ import java.util.stream.StreamSupport;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * A converter that can read and write datapoint streams.
+ * A converter that can read and write data point streams.
  * <p>
  * It supports reading from:
  * <ul>
- * <li>application/ssb.dataset.data+json</li>
- * <li>application/x-ssb.dataset.data+json</li>
- * <li>application/ssb.dataset+json</li>
- * <li>application/x-ssb.dataset+json</li>
+ * <li>application/ssb.dataset.data+json ; [version=2]"</li>
+ * <li>application/x-ssb.dataset.data+json ; [version=2]</li>
  * </ul>
  * <p>
  * And writes:
  * <ul>
- * <li>application/ssb.dataset.data+json</li>
- * <li>application/x-ssb.dataset.data+json</li>
+ * <li>application/ssb.dataset.data+json;version=2</li>
+ * <li>application/x-ssb.dataset.data+json;version=2</li>
  * </ul>
  */
 public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Stream<DataPoint>> {
 
-    // http://www.mocky.io/v2/594a3f92100000b4021aa3c0
-    public static final String APPLICATION_SSB_DATASET_DATA_JSON_V1_VALUE = "application/ssb.dataset-data+json;version=1";
-
+    // Example:
     // http://www.mocky.io/v2/594a3fb4100000ae021aa3c2
     public static final String APPLICATION_SSB_DATASET_DATA_JSON_V2_VALUE = "application/ssb.dataset.data+json;version=2";
-
-    public static final MediaType APPLICATION_SSB_DATASET_DATA_JSON_V1 = MediaType.parseMediaType(APPLICATION_SSB_DATASET_DATA_JSON_V1_VALUE);
     public static final MediaType APPLICATION_SSB_DATASET_DATA_JSON_V2 = MediaType.parseMediaType(APPLICATION_SSB_DATASET_DATA_JSON_V2_VALUE);
 
 
@@ -60,13 +54,18 @@ public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Strea
     // @formatter:on
 
     private final ObjectMapper mapper;
+    private final boolean requireVersion;
 
     public DataHttpConverter(ObjectMapper mapper) {
+        this(mapper, true);
+    }
+
+    public DataHttpConverter(ObjectMapper mapper, boolean requireVersion) {
         super(
-                APPLICATION_SSB_DATASET_DATA_JSON_V1,
                 APPLICATION_SSB_DATASET_DATA_JSON_V2
         );
         this.mapper = checkNotNull(mapper);
+        this.requireVersion = requireVersion;
 
         // TODO: Initialize readers.
     }
@@ -99,6 +98,18 @@ public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Strea
     public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
         // TODO: Maybe use context?
         return canRead(TypeToken.of(type), mediaType);
+    }
+
+    @Override
+    protected boolean canRead(MediaType mediaType) {
+        if (super.canRead(mediaType)) {
+            if (!requireVersion)
+                return true;
+            else
+                return "2".equals(mediaType.getParameter("version"));
+        } else {
+            return false;
+        }
     }
 
     /**

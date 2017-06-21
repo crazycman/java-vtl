@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static no.ssb.vtl.tools.sandbox.connector.spring.BlockingQueueSpliterator.EOS;
 
 /**
  * A connector that relies on {@link RestTemplate}.
@@ -144,44 +145,7 @@ public class RestClientConnector {
 
 
 
-        Spliterator<DataPoint> spliterator = new Spliterators.AbstractSpliterator<DataPoint>(
-                Long.MAX_VALUE,
-                Spliterator.IMMUTABLE
-        ) {
-
-            @Override
-            public boolean tryAdvance(Consumer<? super DataPoint> action) {
-                try {
-
-                    DataPoint p = queue.take();
-                    if (p == EOS)
-                        return false;
-
-                    action.accept(p);
-
-                } catch (InterruptedException ie) {
-                    future.cancel(true);
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("stream interrupted");
-                }
-                return true;
-            }
-
-            @Override
-            public void forEachRemaining(Consumer<? super DataPoint> action) {
-                try {
-
-                    DataPoint p;
-                    while ((p = queue.take()) != EOS)
-                        action.accept(p);
-
-                } catch (InterruptedException ie) {
-                    future.cancel(true);
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("stream interrupted");
-                }
-            }
-        };
+        Spliterator<DataPoint> spliterator = new BlockingQueueSpliterator(queue, future);
 
         Stream<DataPoint> stream = StreamSupport.stream(spliterator, false);
 
@@ -257,6 +221,51 @@ public class RestClientConnector {
                 e.printStackTrace();
             }
         };
+    }
+
+    private static class BlockingQueueSpliterator extends Spliterators.AbstractSpliterator<DataPoint> {
+
+        private final BlockingQueue<DataPoint> queue;
+        private final Future<?> future;
+
+        public BlockingQueueSpliterator(BlockingQueue<DataPoint> queue, Future<?> future) {
+            super(Long.MAX_VALUE, Spliterator.IMMUTABLE);
+            this.queue = queue;
+            this.future = future;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super DataPoint> action) {
+            try {
+
+                DataPoint p = queue.take();
+                if (p == EOS)
+                    return false;
+
+                action.accept(p);
+
+            } catch (InterruptedException ie) {
+                future.cancel(true);
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("stream interrupted");
+            }
+            return true;
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super DataPoint> action) {
+            try {
+
+                DataPoint p;
+                while ((p = queue.take()) != EOS)
+                    action.accept(p);
+
+            } catch (InterruptedException ie) {
+                future.cancel(true);
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("stream interrupted");
+            }
+        }
     }
 
     /**

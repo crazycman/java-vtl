@@ -37,7 +37,7 @@ public class DataHttpConverterTest {
         TypeToken<Stream<DataPoint>> typeToken = new TypeToken<Stream<DataPoint>>() {
         };
 
-        HttpInputMessage message = loadFile("ssb.dataset+json;version=2" + ".json");
+        HttpInputMessage message = loadFile("ssb.dataset.data+json;version=2.json");
 
         Stream<DataPoint> result = converter.read(typeToken.getType(), null, message);
         result.forEach(System.out::println);

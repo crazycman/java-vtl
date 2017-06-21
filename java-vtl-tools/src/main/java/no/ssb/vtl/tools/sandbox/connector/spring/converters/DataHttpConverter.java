@@ -95,14 +95,7 @@ public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Strea
         return readInternal(null, inputMessage);
     }
 
-
-    @Override
-    protected Stream<DataPoint> readInternal(Class<? extends Stream<DataPoint>> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-
-        JsonParser parser = mapper.getFactory().createParser(inputMessage.getBody());
-
-        parser.nextValue();
-        parser.nextValue();
+    Stream<DataPoint> readWithParser(JsonParser parser) throws IOException {
 
         MappingIterator<List<VTLObjectWrapper>> data = mapper.readerFor(LIST_TYPE_REFERENCE)
                 .readValues(parser);
@@ -119,6 +112,15 @@ public class DataHttpConverter extends AbstractGenericHttpMessageConverter<Strea
                     .collect(Collectors.toList()
                     );
         }).map(DataPoint::create);
+    }
+
+    @Override
+    protected Stream<DataPoint> readInternal(Class<? extends Stream<DataPoint>> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        // TODO: wrap exceptions in HttpMessageNotReadableException
+        JsonParser parser = mapper.getFactory().createParser(inputMessage.getBody());
+        parser.nextValue();
+        parser.nextValue();
+        return readWithParser(parser);
     }
 
 

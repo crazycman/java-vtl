@@ -27,6 +27,9 @@ public class DataStructureHttpConverter extends AbstractHttpMessageConverter<Dat
 
     private final ObjectMapper mapper;
 
+    private final TypeReference<List<DataStructureWrapper>> TYPE_REFERENCE = new TypeReference<List<DataStructureWrapper>>() {
+    };
+
     protected DataStructureHttpConverter(MediaType supportedMediaType, ObjectMapper mapper) {
         super(supportedMediaType);
         this.mapper = checkNotNull(mapper);
@@ -51,13 +54,8 @@ public class DataStructureHttpConverter extends AbstractHttpMessageConverter<Dat
         throw new UnsupportedOperationException(); // we rely on can read and can write.
     }
 
-    @Override
-    protected DataStructure readInternal(Class<? extends DataStructure> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-        JsonParser parser = mapper.getFactory().createParser(inputMessage.getBody());
-
-        TypeReference<List<DataStructureWrapper>> typeReference = new TypeReference<List<DataStructureWrapper>>() {
-        };
-        List<DataStructureWrapper> parsed = parser.readValueAs(typeReference);
+    DataStructure readWithParser(JsonParser parser) throws IOException {
+        List<DataStructureWrapper> parsed = parser.readValueAs(TYPE_REFERENCE);
 
         DataStructure.Builder builder = DataStructure.builder();
         for (DataStructureWrapper variable : parsed) {
@@ -68,6 +66,12 @@ public class DataStructureHttpConverter extends AbstractHttpMessageConverter<Dat
             );
         }
         return builder.build();
+    }
+
+    @Override
+    protected DataStructure readInternal(Class<? extends DataStructure> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        JsonParser parser = mapper.getFactory().createParser(inputMessage.getBody());
+        return readWithParser(parser);
     }
 
     @Override

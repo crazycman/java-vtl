@@ -6,6 +6,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -18,11 +19,13 @@ class BlockingQueueSpliterator extends Spliterators.AbstractSpliterator<DataPoin
 
     private final BlockingQueue<DataPoint> queue;
     private final Future<?> future;
+    private final AtomicReference<Exception> exception;
 
-    public BlockingQueueSpliterator(BlockingQueue<DataPoint> queue, Future<?> future) {
+    public BlockingQueueSpliterator(BlockingQueue<DataPoint> queue, Future<?> future, AtomicReference<Exception> exception) {
         super(Long.MAX_VALUE, Spliterator.IMMUTABLE);
         this.queue = queue;
         this.future = future;
+        this.exception = exception;
     }
 
     @Override
@@ -38,7 +41,12 @@ class BlockingQueueSpliterator extends Spliterators.AbstractSpliterator<DataPoin
         } catch (InterruptedException ie) {
             future.cancel(true);
             Thread.currentThread().interrupt();
-            throw new RuntimeException("stream interrupted");
+
+            Exception ex = this.exception.get();
+            if (ex != null)
+                throw new RuntimeException(ex);
+            else
+                throw new RuntimeException("stream interrupted");
         }
         return true;
     }

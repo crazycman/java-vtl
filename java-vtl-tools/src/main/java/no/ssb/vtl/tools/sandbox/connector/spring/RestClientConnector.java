@@ -27,6 +27,7 @@ import java.util.Spliterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -68,6 +69,7 @@ public class RestClientConnector implements Connector {
         // connection and deserialization.
 
         final BlockingQueue<DataPoint> queue = Queues.newArrayBlockingQueue(100);
+        final AtomicReference<Exception> exception = new AtomicReference<>();
         final Thread reader = Thread.currentThread();
 
         Future<Void> task = executorService.submit(() -> {
@@ -76,23 +78,28 @@ public class RestClientConnector implements Connector {
 
             template.execute(uri, HttpMethod.GET, requestCallback, response -> {
 
-                ResponseExtractor<ResponseEntity<Stream<DataPoint>>> extractor;
-                extractor = template.responseEntityExtractor(DATAPOINT_STREAM_TYPE.getType());
+                try {
+                    ResponseExtractor<ResponseEntity<Stream<DataPoint>>> extractor;
+                    extractor = template.responseEntityExtractor(DATAPOINT_STREAM_TYPE.getType());
 
-                ResponseEntity<Stream<DataPoint>> responseEntity = extractor.extractData(response);
+                    ResponseEntity<Stream<DataPoint>> responseEntity = extractor.extractData(response);
 
+                    try (Stream<DataPoint> stream = responseEntity.getBody()) {
 
-                try (Stream<DataPoint> stream = responseEntity.getBody()) {
+                        Iterator<DataPoint> it = stream.iterator();
+                        while (it.hasNext()) {
+                            queue.put(it.next());
+                        }
+                        queue.put(EOS);
 
-                    Iterator<DataPoint> it = stream.iterator();
-                    while (it.hasNext()) {
-                        queue.put(it.next());
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.debug("interrupted while pushing datapoints to {}", queue);
+                        reader.interrupt();
                     }
-                    queue.put(EOS);
-
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.debug("interrupted while pushing datapoints to {}", queue);
+                } catch (Exception e) {
+                    log.error("read error", e);
+                    exception.set(e);
                     reader.interrupt();
                 }
                 return null;
@@ -101,7 +108,7 @@ public class RestClientConnector implements Connector {
             return null;
         });
 
-        Spliterator<DataPoint> spliterator = new BlockingQueueSpliterator(queue, task);
+        Spliterator<DataPoint> spliterator = new BlockingQueueSpliterator(queue, task, exception);
         Stream<DataPoint> stream = StreamSupport.stream(spliterator, false);
 
         return stream.onClose(() -> task.cancel(true));

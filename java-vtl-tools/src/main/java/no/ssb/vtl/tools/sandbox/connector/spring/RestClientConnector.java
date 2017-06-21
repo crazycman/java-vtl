@@ -6,10 +6,15 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
+import no.ssb.vtl.connector.Connector;
+import no.ssb.vtl.connector.ConnectorException;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequest;
@@ -19,19 +24,21 @@ import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -50,10 +57,17 @@ import static no.ssb.vtl.tools.sandbox.connector.spring.BlockingQueueSpliterator
  * This class solves this issue by executing the requests in a thread pools and
  * transfer the result to a wrapped stream.
  */
-public class RestClientConnector {
+public class RestClientConnector implements Connector {
 
-    // End of stream marker.
-    private static final DataPoint EOS = DataPoint.create(0);
+    private static final Logger log = LoggerFactory.getLogger(RestClientConnector.class);
+
+    public static final ParameterizedTypeReference<Stream<DataPoint>> DATAPOINT_STREAM_TYPE;
+
+    //@formatter:off
+    static {
+        DATAPOINT_STREAM_TYPE = new ParameterizedTypeReference<Stream<DataPoint>>() {};
+    }
+    //@formatter:on
 
     private final ExecutorService executorService;
     private final WrappedRestTemplate template;
@@ -63,19 +77,89 @@ public class RestClientConnector {
         this.executorService = checkNotNull(executorService);
     }
 
-    public void test() throws ExecutionException, InterruptedException {
+    private Stream<DataPoint> getData(URI uri) {
 
-        try {
-            ResponseEntity<DataStructure> structure = template.getForEntity("http://dataset", DataStructure.class);
-        } catch (RestClientException rce) {
-            rce.printStackTrace();
-        }
+        // Where the magic happens. We wrap the blocking queue in a Spliterator and let another thread handle the
+        // connection and deserialization.
 
+        final BlockingQueue<DataPoint> queue = Queues.newArrayBlockingQueue(100);
+        final Thread reader = Thread.currentThread();
+
+        Future<Void> task = executorService.submit(() -> {
+
+            RequestCallback requestCallback = template.httpEntityCallback(null, DATAPOINT_STREAM_TYPE.getType());
+
+            template.execute(uri, HttpMethod.GET, requestCallback, response -> {
+
+                ResponseExtractor<ResponseEntity<Stream<DataPoint>>> extractor;
+                extractor = template.responseEntityExtractor(DATAPOINT_STREAM_TYPE.getType());
+
+                ResponseEntity<Stream<DataPoint>> responseEntity = extractor.extractData(response);
+
+
+                try (Stream<DataPoint> stream = responseEntity.getBody()) {
+
+                    Iterator<DataPoint> it = stream.iterator();
+                    while (it.hasNext()) {
+                        queue.put(it.next());
+                    }
+                    queue.put(EOS);
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.debug("interrupted while pushing datapoints to {}", queue);
+                    reader.interrupt();
+                }
+                return null;
+            });
+
+            return null;
+        });
+
+        Spliterator<DataPoint> spliterator = new BlockingQueueSpliterator(queue, task);
+        Stream<DataPoint> stream = StreamSupport.stream(spliterator, false);
+
+        return stream.onClose(() -> task.cancel(true));
+    }
+
+    private DataStructure getStructure(URI uri) {
+        ResponseEntity<DataStructure> structureEntity = template.getForEntity(uri, DataStructure.class);
+        return structureEntity.getBody();
+    }
+
+    private boolean checkResourceExists(URI uri) {
         try {
-            ResponseEntity<Dataset> forEntity = template.getForEntity("http://dataset", Dataset.class);
-        } catch (RestClientException rce) {
-            rce.printStackTrace();
+            Set<HttpMethod> allowed = template.optionsForAllow(uri);
+            if (allowed.contains(HttpMethod.HEAD)) {
+                // TODO: Maybe check for content types?
+                template.headForHeaders(uri);
+                return true;
+            }
+        } catch (RestClientResponseException rcre) {
+            return false;
         }
+        return false;
+    }
+
+    @Override
+    public boolean canHandle(String identifier) {
+        try {
+            URI uri = new URI(identifier);
+            return checkResourceExists(uri);
+        } catch (URISyntaxException e) {
+            log.warn("Got invalid URI");
+        }
+        return false;
+    }
+
+    @Override
+    public Dataset getDataset(String identifier) throws ConnectorException {
+        return new RestTemplateDataset(URI.create(identifier));
+    }
+
+    @Override
+    public Dataset putDataset(String identifier, Dataset dataset) throws ConnectorException {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -144,7 +228,6 @@ public class RestClientConnector {
         Future<?> future = executorService.submit(task);
 
 
-
         Spliterator<DataPoint> spliterator = new BlockingQueueSpliterator(queue, future);
 
         Stream<DataPoint> stream = StreamSupport.stream(spliterator, false);
@@ -171,6 +254,9 @@ public class RestClientConnector {
                 Thread.currentThread().interrupt();
                 e.printStackTrace();
                 reader.interrupt();
+            } finally {
+                // TODO: Do some tests.
+                // queue.offer(EOS)
             }
         };
     }
@@ -223,53 +309,8 @@ public class RestClientConnector {
         };
     }
 
-    private static class BlockingQueueSpliterator extends Spliterators.AbstractSpliterator<DataPoint> {
-
-        private final BlockingQueue<DataPoint> queue;
-        private final Future<?> future;
-
-        public BlockingQueueSpliterator(BlockingQueue<DataPoint> queue, Future<?> future) {
-            super(Long.MAX_VALUE, Spliterator.IMMUTABLE);
-            this.queue = queue;
-            this.future = future;
-        }
-
-        @Override
-        public boolean tryAdvance(Consumer<? super DataPoint> action) {
-            try {
-
-                DataPoint p = queue.take();
-                if (p == EOS)
-                    return false;
-
-                action.accept(p);
-
-            } catch (InterruptedException ie) {
-                future.cancel(true);
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("stream interrupted");
-            }
-            return true;
-        }
-
-        @Override
-        public void forEachRemaining(Consumer<? super DataPoint> action) {
-            try {
-
-                DataPoint p;
-                while ((p = queue.take()) != EOS)
-                    action.accept(p);
-
-            } catch (InterruptedException ie) {
-                future.cancel(true);
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("stream interrupted");
-            }
-        }
-    }
-
     /**
-     * Exposes some of the variables.
+     * Exposes methods of the RestTemplate.
      */
     public class WrappedRestTemplate extends RestTemplate {
 
@@ -286,13 +327,53 @@ public class RestClientConnector {
         }
 
         @Override
-        public  <T> RequestCallback acceptHeaderRequestCallback(Class<T> responseType) {
+        public <T> RequestCallback acceptHeaderRequestCallback(Class<T> responseType) {
             return super.acceptHeaderRequestCallback(responseType);
         }
 
         @Override
         protected <T> ResponseExtractor<ResponseEntity<T>> responseEntityExtractor(Type responseType) {
             return super.responseEntityExtractor(responseType);
+        }
+
+        @Override
+        protected <T> RequestCallback httpEntityCallback(Object requestBody, Type responseType) {
+            return super.httpEntityCallback(requestBody, responseType);
+        }
+    }
+
+    private class RestTemplateDataset implements Dataset {
+
+        private final URI uri;
+        private DataStructure structure;
+
+        private RestTemplateDataset(URI uri) {
+            this.uri = uri;
+        }
+
+        @Override
+        public Stream<DataPoint> getData() {
+            // Always return a new stream.
+            return RestClientConnector.this.getData(uri);
+        }
+
+        @Override
+        public Optional<Map<String, Integer>> getDistinctValuesCount() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Long> getSize() {
+            return Optional.empty();
+        }
+
+        @Override
+        public DataStructure getDataStructure() {
+            if (structure != null)
+                return structure;
+
+            structure = RestClientConnector.this.getStructure(uri);
+            return structure;
         }
     }
 

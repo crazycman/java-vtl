@@ -11,14 +11,11 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,20 +34,6 @@ public class RestTemplateConnector implements Connector {
     protected RestTemplateConnector(RestTemplate template) {
         this.template = checkNotNull(template);
         this.factory = template.getRequestFactory();
-    }
-
-    private boolean checkResourceExists(URI uri) {
-        try {
-            Set<HttpMethod> allowed = template.optionsForAllow(uri);
-            if (allowed.contains(HttpMethod.HEAD)) {
-                // TODO: Maybe check for content types?
-                template.headForHeaders(uri);
-                return true;
-            }
-        } catch (RestClientResponseException rcre) {
-            return false;
-        }
-        return false;
     }
 
     private Stream<DataPoint> getData(URI uri) {
@@ -78,12 +61,6 @@ public class RestTemplateConnector implements Connector {
 
     @Override
     public boolean canHandle(String identifier) {
-        try {
-            URI uri = new URI(identifier);
-            return checkResourceExists(uri);
-        } catch (URISyntaxException e) {
-            log.warn("Got invalid URI");
-        }
         return false;
     }
 
